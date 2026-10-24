@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Local Web Server (Python)",
+      "type": "shell",
+      "command": "python -m http.server 8000",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Compile C to WebAssembly (Emscripten)",
+      "type": "shell",
+      "command": "cmd /c \"<nul build_wasm.bat\"",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Compile & Run Native C Tests (GCC)",
+      "type": "shell",
+      "command": "gcc -Wall -Wextra linked_list.c -o test_linked_list.exe; .\\test_linked_list.exe",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}
