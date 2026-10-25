@@ -46,17 +46,6 @@
       </div>
     </header>
 
-    <!-- Fallback / Error Banner if opened via file:// without web server -->
-    <div id="corsNotice" class="alert-banner warning-banner" hidden>
-      <div class="alert-icon">⚠️</div>
-      <div class="alert-body">
-        <strong>WebAssembly HTTP Notice:</strong>
-        Browser security prevents loading <code>linked_list.wasm</code> directly via the <code>file://</code> protocol.
-        Please run a local server in this directory:
-        <code>python -m http.server 8000</code> or use the <strong>VS Code Live Server</strong> extension, then visit
-        <a href="http://localhost:8000" target="_blank">http://localhost:8000</a>.
-      </div>
-    </div>
 
     <!-- Live System Metrics Ribbon -->
     <section class="metrics-ribbon" aria-label="Authoritative C Memory Metrics">
@@ -542,38 +531,6 @@
 
       </section>
 
-      <!-- Operation History Log Table -->
-      <section class="card history-card">
-        <div class="card-header">
-          <div class="card-title-group">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <h3 class="card-title">Execution Log &amp; C Return Status</h3>
-          </div>
-          <button id="btnClearLog" class="btn btn-secondary btn-xs">Clear Log</button>
-        </div>
-        <div class="card-body">
-          <div class="table-container">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Operation</th>
-                  <th>Parameters</th>
-                  <th>C Return Code</th>
-                  <th>Result Summary</th>
-                  <th>Nodes</th>
-                </tr>
-              </thead>
-              <tbody id="historyTableBody">
-                <!-- Log rows added dynamically -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
     </main>
 

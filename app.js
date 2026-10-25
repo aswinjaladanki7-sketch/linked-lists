@@ -465,7 +465,6 @@ const char* get_serialized_list(void) {
 
   // DOM Elements
   const elWasmStatus = document.getElementById('wasmStatus');
-  const elCorsNotice = document.getElementById('corsNotice');
   const elCanvasList = document.getElementById('canvasList');
   const elMetricType = document.getElementById('metricType');
   const elMetricHead = document.getElementById('metricHead');
@@ -481,7 +480,6 @@ const char* get_serialized_list(void) {
   const elEduNote = document.getElementById('eduNote');
   const elCodeSelect = document.getElementById('codeSnippetSelect');
   const elCCodeDisplay = document.getElementById('cCodeDisplay');
-  const elHistoryTable = document.getElementById('historyTableBody');
   const elToastContainer = document.getElementById('toastContainer');
   const elHelpModal = document.getElementById('helpModal');
 
@@ -566,31 +564,14 @@ const char* get_serialized_list(void) {
   }
 
   // ==========================================================================
-  // Execution Log Recorder
+  // Execution Status Recorder
   // ==========================================================================
   function logExecution(opName, params, statusCode, summary, count) {
-    const tr = document.createElement('tr');
-    const time = new Date().toLocaleTimeString();
-
-    let badgeClass = 'badge-success';
-    if (statusCode < 0) badgeClass = 'badge-error';
-    else if (opName.includes('Query') || opName.includes('Peek') || opName.includes('Traverse') || opName.includes('Switch')) badgeClass = 'badge-info';
-
     const statusText = STATUS_LABELS[statusCode] || `Code: ${statusCode}`;
-
-    tr.innerHTML = `
-      <td class="code-font">${time}</td>
-      <td><strong>${opName}</strong></td>
-      <td class="code-font">${params || '-'}</td>
-      <td><span class="history-badge ${badgeClass}">${statusText}</span></td>
-      <td>${summary}</td>
-      <td class="code-font highlight-cyan">${count}</td>
-    `;
-
-    elHistoryTable.insertBefore(tr, elHistoryTable.firstChild);
-
-    elMetricStatus.textContent = statusText;
-    elMetricStatus.className = `metric-value code-font ${statusCode === 0 ? 'status-ok' : 'status-err'}`;
+    if (elMetricStatus) {
+      elMetricStatus.textContent = statusText;
+      elMetricStatus.className = `metric-value code-font ${statusCode === 0 ? 'status-ok' : 'status-err'}`;
+    }
   }
 
   // ==========================================================================
@@ -1611,11 +1592,7 @@ const char* get_serialized_list(void) {
       viewport.scrollTo({ left: 0, behavior: 'smooth' });
     });
 
-    // Clear execution history log
-    document.getElementById('btnClearLog').addEventListener('click', () => {
-      elHistoryTable.innerHTML = '';
-      showToast('Execution history log cleared.', 'info');
-    });
+
 
     // Code Snippet Selector Dropdown
     elCodeSelect.addEventListener('change', (e) => {
@@ -1946,13 +1923,6 @@ const char* get_serialized_list(void) {
 
       elWasmStatus.className = 'status-indicator';
       elWasmStatus.querySelector('.status-text').textContent = 'Local Preview (file://)';
-      elCorsNotice.removeAttribute('hidden');
-      elCorsNotice.querySelector('.alert-body').innerHTML = `
-        <strong>Local Preview Notice (file://):</strong>
-        Browser security prevents direct loading of binary <code>.wasm</code> files under <code>file://</code>.
-        The visualizer is running in <strong>Interactive Preview Mode</strong>.
-        To run native WebAssembly compilation, serve with <code>python -m http.server 8000</code> or deploy to <strong>GitHub Pages</strong>.
-      `;
 
       handleInitList('10, 20, 30, 40');
       showToast('Visualizer ready in Local Preview Mode.', 'info');
@@ -1982,7 +1952,6 @@ const char* get_serialized_list(void) {
 
       elWasmStatus.className = 'status-indicator';
       elWasmStatus.querySelector('.status-text').textContent = 'WASM Ready (Native C)';
-      elCorsNotice.setAttribute('hidden', '');
 
       handleInitList('10, 20, 30, 40');
       showToast('WebAssembly module connected to native C engine successfully!', 'success');
@@ -1995,11 +1964,6 @@ const char* get_serialized_list(void) {
 
       elWasmStatus.className = 'status-indicator';
       elWasmStatus.querySelector('.status-text').textContent = 'Preview Mode';
-      elCorsNotice.removeAttribute('hidden');
-      elCorsNotice.querySelector('.alert-body').innerHTML = `
-        <strong>WebAssembly HTTP Notice:</strong> ${escapeHtml(err.message)}
-        <br><small>Visualizer running in resilient fallback mode.</small>
-      `;
 
       handleInitList('10, 20, 30, 40');
       showToast('Running in resilient fallback mode.', 'warning');
