@@ -578,22 +578,24 @@ const char* get_serialized_list(void) {
   // Educational Explanation and Code Sync
   // ==========================================================================
   function updateEducation(info) {
-    if (info.complexity) elEduComplexity.textContent = info.complexity;
-    if (info.title) elEduTitle.textContent = info.title;
-    if (info.summary) elEduSummary.textContent = info.summary;
-    if (info.note) elEduNote.innerHTML = info.note;
+    if (!elEduTitle) return;
+    if (info.complexity && elEduComplexity) elEduComplexity.textContent = info.complexity;
+    if (info.title && elEduTitle) elEduTitle.textContent = info.title;
+    if (info.summary && elEduSummary) elEduSummary.textContent = info.summary;
+    if (info.note && elEduNote) elEduNote.innerHTML = info.note;
 
-    if (info.steps && Array.isArray(info.steps)) {
+    if (info.steps && Array.isArray(info.steps) && elEduStepsList) {
       elEduStepsList.innerHTML = info.steps.map(s => `<li>${s}</li>`).join('');
     }
 
-    if (info.snippetKey && C_SNIPPETS[info.snippetKey]) {
+    if (info.snippetKey && C_SNIPPETS[info.snippetKey] && elCodeSelect) {
       elCodeSelect.value = info.snippetKey;
       renderCCodeSnippet(info.snippetKey);
     }
   }
 
   function renderCCodeSnippet(key) {
+    if (!elCCodeDisplay) return;
     const raw = C_SNIPPETS[key] || '/* Snippet not found */';
     let highlighted = raw
       .replace(/&/g, '&amp;')
@@ -1595,17 +1597,20 @@ const char* get_serialized_list(void) {
 
 
     // Code Snippet Selector Dropdown
-    elCodeSelect.addEventListener('change', (e) => {
+    elCodeSelect?.addEventListener('change', (e) => {
       renderCCodeSnippet(e.target.value);
     });
 
     // Copy C Code button
-    document.getElementById('btnCopyCode').addEventListener('click', () => {
+    document.getElementById('btnCopyCode')?.addEventListener('click', () => {
+      if (!elCCodeDisplay) return;
       const code = elCCodeDisplay.textContent;
       navigator.clipboard.writeText(code).then(() => {
         const copyText = document.getElementById('copyCodeText');
-        copyText.textContent = 'Copied!';
-        setTimeout(() => copyText.textContent = 'Copy', 2000);
+        if (copyText) {
+          copyText.textContent = 'Copied!';
+          setTimeout(() => copyText.textContent = 'Copy', 2000);
+        }
         showToast('C source code copied to clipboard!', 'info');
       }).catch(() => {
         showToast('Failed to copy code to clipboard.', 'error');
