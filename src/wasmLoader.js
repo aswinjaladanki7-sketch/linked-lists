@@ -15,22 +15,59 @@ class WasmLinkedListBridge {
     if (this.readyPromise) return this.readyPromise;
 
     this.readyPromise = (async () => {
-      // Ensure the createLinkedListModule script is loaded
-      if (typeof window.createLinkedListModule !== 'function') {
-        await this._loadScript('/wasm/linked_list.js');
+      if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+        throw new Error("Cannot run directly via file:// protocol. Browsers restrict WebAssembly and ES modules over local files. Please run 'npm run dev' and open http://localhost:5173/.");
       }
 
-      if (typeof window.createLinkedListModule !== 'function') {
-        throw new Error('createLinkedListModule factory not found on window');
+      // Check if factory is already available on global scope
+      let factory = (typeof window !== 'undefined' ? window.createLinkedListModule : null) || 
+                    (typeof globalThis !== 'undefined' ? globalThis.createLinkedListModule : null);
+
+      if (typeof factory !== 'function') {
+        const baseUrl = typeof window !== 'undefined' 
+          ? window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1)
+          : './';
+        
+        const candidates = [
+          new URL('wasm/linked_list.js', baseUrl).href,
+          './wasm/linked_list.js',
+          '/wasm/linked_list.js',
+          'wasm/linked_list.js'
+        ];
+
+        let loaded = false;
+        let lastErr = null;
+        for (const src of candidates) {
+          try {
+            await this._loadScript(src);
+            factory = (typeof window !== 'undefined' ? window.createLinkedListModule : null) || 
+                      (typeof globalThis !== 'undefined' ? globalThis.createLinkedListModule : null);
+            if (typeof factory === 'function') {
+              loaded = true;
+              break;
+            }
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+
+        if (!loaded || typeof factory !== 'function') {
+          throw new Error(`Failed to load WebAssembly loader script. Please ensure the dev server is running (npm run dev). Details: ${lastErr?.message || 'createLinkedListModule not found'}`);
+        }
       }
 
-      // Initialize the Emscripten module with locateFile pointing to /wasm/
-      this.module = await window.createLinkedListModule({
+      // Locate the .wasm binary relative to the current page
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1)
+        : './';
+      const wasmUrl = new URL('wasm/linked_list.wasm', baseUrl).href;
+
+      this.module = await factory({
         locateFile: (path) => {
           if (path.endsWith('.wasm')) {
-            return '/wasm/linked_list.wasm';
+            return wasmUrl;
           }
-          return '/wasm/' + path;
+          return new URL('wasm/' + path, baseUrl).href;
         },
         print: (text) => console.log('[WASM C stdout]', text),
         printErr: (text) => console.error('[WASM C stderr]', text)
@@ -46,17 +83,24 @@ class WasmLinkedListBridge {
 
   _loadScript(src) {
     return new Promise((resolve, reject) => {
+      if ((typeof window !== 'undefined' && window.createLinkedListModule) || 
+          (typeof globalThis !== 'undefined' && globalThis.createLinkedListModule)) {
+        return resolve();
+      }
       const existing = document.querySelector(`script[src="${src}"]`);
       if (existing) {
         existing.addEventListener('load', () => resolve());
-        existing.addEventListener('error', (e) => reject(e));
-        if (window.createLinkedListModule) return resolve();
+        existing.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)));
+        if ((typeof window !== 'undefined' && window.createLinkedListModule) || 
+            (typeof globalThis !== 'undefined' && globalThis.createLinkedListModule)) {
+          return resolve();
+        }
       }
       const script = document.createElement('script');
       script.src = src;
-      script.async = true;
+      script.async = false;
       script.onload = () => resolve();
-      script.onerror = (err) => reject(new Error(`Failed to load script: ${src}`));
+      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
       document.head.appendChild(script);
     });
   }
