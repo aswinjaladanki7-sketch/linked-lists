@@ -1,37 +1,21 @@
-# Compiled binaries and native executables
-*.exe
-*.out
-*.app
-test_linked_list.exe
+# Node dependencies
+node_modules/
+package-lock.json
 
-# Object files and intermediate build artifacts
+# Build outputs
+dist/
+build/
+
+# Compiled native binaries
+*.exe
 *.o
 *.obj
-*.a
-*.lib
-*.so
-*.dylib
 
-# Local IDE and editor configurations
-.vscode/*
-!.vscode/tasks.json
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# Operating system metadata
+# OS & Editor files
 .DS_Store
 Thumbs.db
-Desktop.ini
-ehthumbs.db
+.vscode/
+.idea/
 
-# Logs, scratch scripts, and temporary agent files
-*.log
-scratch/
-.system_generated/
+# Antigravity artifacts
 .gemini/
-
-# Explicitly track authoritative WebAssembly distribution files
-!wasm/
-!wasm/linked_list.js
-!wasm/linked_list.wasm

@@ -1,0 +1,24 @@
+{
+  "name": "linked-lists-visualizer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "High-Performance Interactive WebAssembly Linked List Visualizer",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "linked-list",
+    "webassembly",
+    "c",
+    "data-structures",
+    "visualizer",
+    "vite"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^8.3.5"
+  }
+}

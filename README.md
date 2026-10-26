@@ -1,167 +1,100 @@
-# Linked List Interactive Visualizer (C + WebAssembly)
+# Singly Linked List Visualizer (C + WebAssembly)
 
-[![WebAssembly](https://img.shields.io/badge/WebAssembly-WASM-654FF0?logo=webassembly&logoColor=white)](https://webassembly.org/)
-[![C](https://img.shields.io/badge/C-C11-00599C?logo=c&logoColor=white)](https://en.wikipedia.org/wiki/C_(programming_language))
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GitHub Pages](https://img.shields.io/badge/Deployment-GitHub%20Pages-222222?logo=github)](https://pages.github.com/)
-
-An interactive, educational web application designed for a college **Data Structures and Algorithms (DSA)** course.
-
-This visualizer uses an **authoritative native C implementation** compiled to **WebAssembly (WASM)** via Emscripten. The browser executes actual C algorithms and manual heap memory management routines (`malloc`, `free`, pointer adjustments), with **zero duplicated linked list logic in JavaScript**.
+An interactive, menu-driven **Singly Linked List Visualizer** built for college Data Structures and Algorithms (DSA) coursework. Powered by a native **C** data structure engine compiled to **WebAssembly (WASM)** with real-time memory telemetry and step-by-step visual animation.
 
 ---
 
-## 🌟 Key Features
+## ⚡ Features
 
-### 1. Comprehensive Data Structure Support
-* **Singly Linked List**: Linear forward chain where each node holds data and a `next` pointer, terminating at `NULL`.
-* **Doubly Linked List**: Bi-directional chain with both `prev` and `next` pointers, enabling two-way traversal and $O(1)$ deletion with a known node pointer.
-* **Circular Linked List**: Continuous ring buffer where the final node's `next` pointer links directly back to the `HEAD` node.
-
-### 2. Complete Operation Coverage
-* **Initialization**: Construct lists dynamically from any comma-separated, semicolon-separated, or space-separated integer sequence (e.g., `10, 20, 30, 40`). Quick presets include Default, Medium, Signed Integers, and Duplicates.
-* **Insertions**:
-  * At Beginning (`insert_beginning` - $O(1)$ / $O(n)$ for Circular)
-  * At End (`insert_end` - $O(n)$)
-  * At Specified 1-based Position (`insert_at_position` - $O(n)$)
-  * Immediately After a Target Value (`insert_after_value` - $O(n)$)
-* **Deletions**:
-  * From Beginning (`delete_beginning` - $O(1)$ / $O(n)$ for Circular)
-  * From End (`delete_end` - $O(n)$)
-  * At Specified 1-based Position (`delete_at_position` - $O(n)$)
-  * By Value (`delete_by_value` - $O(n)$), removing the first occurrence and preserving subsequent duplicates
-* **In-Place Updates**:
-  * Update at Position (`update_at_position` - $O(n)$)
-  * Update by Value (`update_value` - $O(n)$)
-* **Queries & Traversals**:
-  * Linear search (`search_value` - $O(n)$) with stepped node-by-node animation
-  * Full list traversal (`traverse_list` - $O(n)$) with sequential pointer inspection
-  * Node count query (`get_node_count` - $O(n)$)
-  * Peek HEAD and TAIL values and memory addresses
-* **List Manipulation & Memory Cleanup**:
-  * Iterative in-place pointer reversal (`reverse_list` - $O(n)$) using 3 pointers (`prev`, `current`, `next`) with $O(1)$ auxiliary space
-  * Full memory cleanup and reset (`clear_list` - $O(n)$), invoking `free()` on every node to guarantee zero memory leaks
-
-### 3. Visual & Educational Representation
-* **Real C Memory Addresses**: Displays actual 32-bit WebAssembly heap pointers (e.g. `0x00812018`).
-* **Dual-Cell & Tri-Cell Layouts**: Dual-cell `[ DATA | NEXT ]` for Singly/Circular lists and tri-cell `[ PREV | DATA | NEXT ]` for Doubly lists.
-* **Dynamic Indicators**: Visual `HEAD` badges, bi-directional arrows, `NULL` termini, and animated circular loop return indicators.
-* **Synchronized Educational Panels**:
-  * **Pointer Walkthrough**: Plain-language breakdown of pointer manipulation and dynamic memory allocation.
-  * **Live C Source Code Viewer**: Exact C function definitions from `linked_list.c` displayed alongside time/space complexities.
-  * **Execution History Table**: Real-time log tracking timestamps, C function return codes, parameters, and results.
+- **Individual Input System:** Add elements one at a time using the "Enter Value" input field. Immediate visualization update on each insertion without requiring batch input.
+- **7-Item Operation Menu:** Organized, single-operation interface displaying only the controls needed for the active task:
+  1. **Insertion:** 1-based indexing, supporting beginning (new `HEAD`), end, and interior positions.
+  2. **Deletion:** Deletes first matching node by value with safety guards for empty lists.
+  3. **Traversal:** Sequentially visits and highlights every node from `HEAD` to `NULL`.
+  4. **Searching:** Linear search with zero-based index and 1-based position output.
+  5. **Updating:** Finds the first matching node and updates its value in real time.
+  6. **Display List:** Formatted pointer chain display: `HEAD -> [10] -> [20] -> [30] -> NULL`.
+  7. **Clear List:** Memory deallocation with a confirmation modal before freeing nodes.
+- **Native C Implementation:** Core linked list logic, pointer manipulation, and memory management implemented in pure C (`c_src/singly_linked_list.c`).
+- **WebAssembly Engine:** C source compiled via Emscripten to WebAssembly (`wasm/linked_list.wasm`) for high-performance in-browser execution.
+- **Simulated Heap Telemetry:** Live tracking of dynamic allocations (`malloc`), deallocations (`free`), active heap nodes, and memory leak detection.
+- **Interactive SVG Visuals:** Dark glassmorphic theme with glowing node cards, memory addresses, pointer tags, and SVG connectors.
 
 ---
 
-## 📊 Time & Space Complexity Reference
+## 🚀 Getting Started
 
-| Operation | Singly Linked List | Doubly Linked List | Circular Linked List | Auxiliary Space |
-| :--- | :---: | :---: | :---: | :---: |
-| **Insert Beginning** | $O(1)$ | $O(1)$ | $O(n)$ *(or $O(1)$ with tail)* | $O(1)$ |
-| **Insert End** | $O(n)$ | $O(n)$ *(or $O(1)$ with tail)* | $O(n)$ | $O(1)$ |
-| **Insert at Position** | $O(n)$ | $O(n)$ | $O(n)$ | $O(1)$ |
-| **Delete Beginning** | $O(1)$ | $O(1)$ | $O(n)$ | $O(1)$ |
-| **Delete End** | $O(n)$ | $O(1)$ *(with tail)* / $O(n)$ | $O(n)$ | $O(1)$ |
-| **Delete by Value** | $O(n)$ | $O(n)$ | $O(n)$ | $O(1)$ |
-| **Update Node** | $O(n)$ | $O(n)$ | $O(n)$ | $O(1)$ |
-| **Search Value** | $O(n)$ | $O(n)$ | $O(n)$ | $O(1)$ |
-| **Reverse List** | $O(n)$ | $O(n)$ | $O(n)$ | $O(1)$ |
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [GCC / MinGW](https://www.mingw-w64.org/) (optional, for running native C tests)
+
+### 1. Install Dependencies
+```bash
+npm install
+```
+
+### 2. Start Local Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:5173/](http://localhost:5173/) in your web browser.
+
+### 3. Build for Production
+```bash
+npm run build
+```
 
 ---
 
-## 📁 Project Structure
+## 🧪 Testing the Native C Implementation
+
+A standalone C CLI test runner is included to test and verify the linked list implementation independently of the browser:
+
+```bash
+# Compile and run with GCC (MinGW on Windows)
+gcc -Wall -Wextra -O2 c_src/memory_manager.c c_src/step_recorder.c c_src/singly_linked_list.c c_src/test_cli.c -o test_runner.exe
+./test_runner.exe
+```
+
+The test runner validates the 9-step DSA sequence:
+1. Insert 10
+2. Insert 20
+3. Insert 30
+4. Traverse list
+5. Search for 20
+6. Update 20 to 25
+7. Delete 10
+8. Display final list (`25 -> 30 -> NULL`)
+9. Clear all nodes (verifies 0 active heap leaks)
+
+---
+
+## 📂 Project Structure
 
 ```text
-single linked lists/
-├── linked_list.c            # Authoritative Singly, Doubly & Circular Linked List in C
-├── index.html               # Main visualizer interface & educational panels
-├── style.css                # Modern dark theme & responsive layout
-├── app.js                   # JavaScript driver bridging WebAssembly and DOM
+├── c_src/
+│   ├── linked_list.h         # Common DSA structs and function prototypes
+│   ├── singly_linked_list.c  # Core C implementation of Singly Linked List
+│   ├── memory_manager.c      # Tracked heap allocation (malloc/free telemetry)
+│   ├── step_recorder.c       # Visual animation snapshot recording
+│   ├── wasm_api.c            # Emscripten exported C-to-JS bridge functions
+│   └── test_cli.c            # Native C test suite
 ├── wasm/
-│   ├── linked_list.js       # Emscripten JavaScript glue loader
-│   └── linked_list.wasm     # Compiled WebAssembly binary
-├── .vscode/
-│   └── tasks.json           # VS Code automated tasks (Server, WASM build, GCC test)
-├── build_wasm.bat           # Recompiles C to WebAssembly using Emscripten
-├── build_native.bat         # Compiles and runs native GCC unit tests
-├── start_server.bat         # Launches local HTTP server and opens browser
-├── .gitignore               # Excludes build executables and temp files
-└── README.md                # Project documentation & run guide
+│   ├── linked_list.wasm      # Compiled WebAssembly binary
+│   └── linked_list.js        # Emscripten JS loader glue code
+├── src/
+│   ├── app.js                # Frontend controller & operation menu logic
+│   ├── renderer.js           # SVG arrow rendering & DOM node cards
+│   ├── wasmLoader.js         # WebAssembly instantiation & bridge
+│   └── style.css             # Glassmorphism dark mode stylesheet
+├── index.html                # Main application UI layout
+├── vite.config.js            # Vite bundler configuration
+└── package.json              # Project scripts and configuration
 ```
-
----
-
-## 🚀 How to Run Locally on Windows
-
-Web browsers enforce security policies (CORS) that restrict loading WebAssembly binary files (`.wasm`) directly via the `file://` protocol. Therefore, the visualizer should be served via a local HTTP server (though an interactive preview fallback is also provided).
-
-### Option A: One-Click Windows Batch Script (Fastest)
-1. Double-click `start_server.bat` in the project folder.
-2. It automatically starts Python's HTTP server on port 8000 and launches your default browser at `http://localhost:8000`.
-
-### Option B: Terminal Command (Python)
-Open PowerShell or Command Prompt in the project folder:
-```powershell
-python -m http.server 8000
-```
-Then open your browser at **[http://localhost:8000](http://localhost:8000)**.
-
-### Option C: VS Code Live Server
-1. Open this folder in **VS Code**.
-2. Right-click `index.html` in the Explorer panel and click **"Open with Live Server"**.
-
----
-
-## 🛠️ Compiling & Testing
-
-### 1. Running Native C Unit Tests (GCC)
-You can compile and run the native C test harness to verify memory safety and algorithmic correctness independently of the browser:
-```powershell
-.\build_native.bat
-```
-Or manually via GCC:
-```powershell
-gcc -Wall -Wextra linked_list.c -o test_linked_list.exe
-.\test_linked_list.exe
-```
-
-### 2. Recompiling WebAssembly (Emscripten)
-If you modify `linked_list.c`, recompile the WebAssembly artifacts using `build_wasm.bat`:
-```powershell
-.\build_wasm.bat
-```
-*(Requires Emscripten SDK `emcc` installed or located in your user profile).*
-
----
-
-## 🌐 Deploying to GitHub Pages
-
-This project is a static web application that runs directly in the browser and is fully compatible with **GitHub Pages**:
-
-1. **Push your code to GitHub**:
-   ```bash
-   git add .
-   git commit -m "Initial commit of Linked List Visualizer"
-   git branch -M main
-   git remote add origin https://github.com/<YOUR-USERNAME>/<YOUR-REPO-NAME>.git
-   git push -u origin main
-   ```
-2. **Enable GitHub Pages**:
-   - Go to your repository on GitHub.
-   - Click **Settings** (tab at the top).
-   - In the left sidebar, click **Pages** (under the "Code and automation" section).
-   - Under **Build and deployment** > **Branch**:
-     - Select branch: `main`
-     - Select folder: `/(root)`
-   - Click **Save**.
-3. **View your deployed website**:
-   - GitHub Pages will build and deploy the site in 1–2 minutes.
-   - Your live site URL will be:  
-     `https://<YOUR-USERNAME>.github.io/<YOUR-REPO-NAME>/`
-   - GitHub Pages serves static files over HTTPS and natively serves `.wasm` files with the correct `application/wasm` MIME type.
 
 ---
 
 ## 📜 License
 
-This project is open source and available under the [MIT License](LICENSE).
+MIT License. Designed for academic and college DSA demonstrations.

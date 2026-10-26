@@ -1,540 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Linked List Interactive Visualizer | Singly, Doubly, Circular (C & WebAssembly)</title>
-  <meta name="description" content="An interactive educational visualizer for Singly, Doubly, and Circular Linked Lists implemented in C and compiled to WebAssembly. Explore pointer manipulations, dynamic memory allocation, and DSA concepts.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singly Linked List Visualizer | C & WebAssembly</title>
+  <meta name="description" content="Interactive Singly Linked List Visualizer powered by native C algorithms compiled to WebAssembly with real-time memory and step tracking." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2306B6D4'><circle cx='5' cy='12' r='3'/><circle cx='12' cy='12' r='3'/><circle cx='19' cy='12' r='3'/><path d='M8 12h1M15 12h1' stroke='%2306B6D4' stroke-width='2'/></svg>" />
+  <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
-  <!-- App Container -->
-  <div id="app" class="app-layout">
+  <!-- Loading & WASM Compilation Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-text" class="loading-text">Loading WebAssembly Engine...</div>
+  </div>
 
-    <!-- Top Navigation Header -->
+  <div class="app-container">
+    <!-- Main Application Header -->
     <header class="app-header">
-      <div class="header-left">
-        <div class="brand-badge">
-          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="6" height="10" rx="2" />
-            <rect x="16" y="7" width="6" height="10" rx="2" />
-            <path d="M8 12h8" />
-            <path d="m13 9 3 3-3 3" />
-          </svg>
-          <span class="brand-title">Linked List Visualizer</span>
-          <span class="badge badge-c">C + WebAssembly</span>
+      <div class="logo-group">
+        <div class="logo-badge">⚡</div>
+        <div>
+          <h1 class="app-title">Singly Linked List Visualizer</h1>
+          <div class="app-subtitle">College DSA Engine &bull; Native C &bull; WebAssembly Runtime</div>
         </div>
-        <p class="brand-subtitle">Interactive College DSA Learning Tool &bull; Singly, Doubly &amp; Circular Linked Lists in C</p>
       </div>
 
-      <div class="header-right">
-        <div id="wasmStatus" class="status-indicator loading">
+      <div class="header-status-group">
+        <div class="status-pill">
           <span class="status-dot"></span>
-          <span class="status-text">Initializing WASM...</span>
+          <span>WASM C Engine Active</span>
         </div>
-        <button id="btnHelp" class="btn btn-secondary btn-sm" title="Visualizer Guide & Help">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          <span>Help &amp; DSA Guide</span>
-        </button>
       </div>
     </header>
 
+    <!-- Main Layout Grid (Operations Console + Center Stage) -->
+    <main class="main-layout">
+      <!-- Left Controls Panel: Operation Menu & Dedicated Operation Views -->
+      <section class="glass-panel left-controls-panel" aria-label="Operations and Controls">
+        <div class="panel-title">Operations Menu</div>
 
-    <!-- Live System Metrics Ribbon -->
-    <section class="metrics-ribbon" aria-label="Authoritative C Memory Metrics">
-      <div class="metric-card">
-        <span class="metric-label">Active Type</span>
-        <span id="metricType" class="metric-value code-font highlight-cyan">Singly List</span>
-      </div>
-      <div class="metric-card">
-        <span class="metric-label">HEAD Pointer</span>
-        <span id="metricHead" class="metric-value code-font">NULL</span>
-      </div>
-      <div class="metric-card">
-        <span class="metric-label">TAIL Node</span>
-        <span id="metricTail" class="metric-value code-font">NULL</span>
-      </div>
-      <div class="metric-card">
-        <span class="metric-label">Total Nodes</span>
-        <span id="metricCount" class="metric-value code-font highlight-cyan">0</span>
-      </div>
-      <div class="metric-card">
-        <span class="metric-label">Memory Heap</span>
-        <span id="metricMemory" class="metric-value code-font">0 Bytes</span>
-      </div>
-      <div class="metric-card metric-status">
-        <span class="metric-label">Last C Status</span>
-        <span id="metricStatus" class="metric-value code-font status-ok">STATUS_SUCCESS (0)</span>
-      </div>
-    </section>
+        <!-- 7-Item Organized Operation Menu -->
+        <nav class="op-menu-list" role="tablist" aria-label="Linked List Operations">
+          <button type="button" class="op-menu-btn active" data-op="insert" role="tab" aria-selected="true" id="tab-op-insert">
+            <span class="op-menu-num">1</span>
+            <span class="op-menu-name">Insertion</span>
+          </button>
+          <button type="button" class="op-menu-btn" data-op="delete" role="tab" aria-selected="false" id="tab-op-delete">
+            <span class="op-menu-num">2</span>
+            <span class="op-menu-name">Deletion</span>
+          </button>
+          <button type="button" class="op-menu-btn" data-op="traverse" role="tab" aria-selected="false" id="tab-op-traverse">
+            <span class="op-menu-num">3</span>
+            <span class="op-menu-name">Traversal</span>
+          </button>
+          <button type="button" class="op-menu-btn" data-op="search" role="tab" aria-selected="false" id="tab-op-search">
+            <span class="op-menu-num">4</span>
+            <span class="op-menu-name">Searching</span>
+          </button>
+          <button type="button" class="op-menu-btn" data-op="update" role="tab" aria-selected="false" id="tab-op-update">
+            <span class="op-menu-num">5</span>
+            <span class="op-menu-name">Updating</span>
+          </button>
+          <button type="button" class="op-menu-btn" data-op="display" role="tab" aria-selected="false" id="tab-op-display">
+            <span class="op-menu-num">6</span>
+            <span class="op-menu-name">Display List</span>
+          </button>
+          <button type="button" class="op-menu-btn" data-op="clear" role="tab" aria-selected="false" id="tab-op-clear">
+            <span class="op-menu-num">7</span>
+            <span class="op-menu-name">Clear List</span>
+          </button>
+        </nav>
 
-    <!-- Main Workspace Area: Visualization & Control -->
-    <main class="main-content">
+        <!-- Operation Details Container: Displays ONLY required inputs for selected operation -->
+        <div class="op-view-container" id="op-view-container">
+          
+          <!-- 1. INSERTION VIEW -->
+          <div class="op-view active" id="view-insert" role="tabpanel">
+            <div class="op-view-title-group">
+              <span class="op-view-badge">Operation #1</span>
+              <h2 class="op-view-heading">Insert Element</h2>
+            </div>
+            <p class="op-view-info">Enter one integer at a time and specify its position in the list.</p>
 
-      <!-- Visualization Stage Panel -->
-      <section class="visualizer-stage-card">
-        <div class="stage-header">
-          <div class="stage-title-wrap">
-            <h2 class="stage-title">Linked List Memory Visualization</h2>
-            <span class="stage-tag">Live C Heap State</span>
-          </div>
-          <div class="stage-controls">
-            <span class="speed-label">Speed:</span>
-            <select id="animSpeedSelect" class="select-sm">
-              <option value="900">0.5x Slow</option>
-              <option value="500" selected>1.0x Normal</option>
-              <option value="250">2.0x Fast</option>
-            </select>
-            <button id="btnZoomFit" class="btn btn-secondary btn-xs" title="Reset Zoom & Center">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-              </svg>
-              <span>Fit View</span>
+            <div class="op-form-field">
+              <label class="form-label" for="input-insert-val">Enter Value</label>
+              <input type="number" id="input-insert-val" class="input-field" placeholder="e.g. 10" autofocus />
+            </div>
+
+            <div class="op-form-field">
+              <label class="form-label" for="input-insert-pos">Insertion Position (1-Based)</label>
+              <input type="number" id="input-insert-pos" class="input-field" placeholder="1" min="1" value="1" />
+              <div class="position-convention-box" id="insert-pos-convention">
+                📌 <strong>Position Convention:</strong> 1-based indexing. Position 1 inserts at beginning. Position <span id="pos-max-indicator">1</span> inserts at end.
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-emerald btn-lg" id="btn-do-insert">
+              ➕ Insert
             </button>
           </div>
-        </div>
 
-        <!-- Linked List Type Selector Pills -->
-        <div class="list-type-bar" role="tablist" aria-label="Select Linked List Type">
-          <button id="btnTypeSingly" class="type-pill active" data-type="0" title="Linear chain with forward pointers">
-            <span class="type-icon">➡️</span>
-            <span>Singly Linked List</span>
-          </button>
-          <button id="btnTypeDoubly" class="type-pill" data-type="1" title="Bi-directional chain with prev & next pointers">
-            <span class="type-icon">↔️</span>
-            <span>Doubly Linked List</span>
-          </button>
-          <button id="btnTypeCircular" class="type-pill" data-type="2" title="Circular chain where tail points back to head">
-            <span class="type-icon">🔄</span>
-            <span>Circular Linked List</span>
-          </button>
-        </div>
-
-        <!-- Scrollable Stage Viewport -->
-        <div id="viewport" class="stage-viewport">
-          <div id="canvasList" class="canvas-chain">
-            <!-- Dynamic nodes rendered here by JavaScript from authoritative C state -->
-            <div id="emptyListState" class="empty-state">
-              <div class="empty-illustration">
-                <span class="head-badge">HEAD</span>
-                <span class="arrow-symbol">&rarr;</span>
-                <span class="null-badge">NULL</span>
-              </div>
-              <p class="empty-text">List is currently empty (<code>head == NULL</code>)</p>
-              <p class="empty-hint">Use the <strong>Initialize</strong> panel below or insert nodes to begin visualizing.</p>
+          <!-- 2. DELETION VIEW -->
+          <div class="op-view" id="view-delete" role="tabpanel">
+            <div class="op-view-title-group">
+              <span class="op-view-badge">Operation #2</span>
+              <h2 class="op-view-heading">Delete by Value</h2>
             </div>
-          </div>
-        </div>
+            <p class="op-view-info">Deletes the first matching occurrence of the specified value from the linked list.</p>
 
-        <!-- Pointer Legend / Indicator Bar -->
-        <div class="stage-footer">
-          <div class="legend-item">
-            <span class="legend-dot dot-head"></span>
-            <span>HEAD Pointer</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot dot-node"></span>
-            <span>Node Cells [Prev | Data | Next]</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot dot-active"></span>
-            <span>Active / Visited</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot dot-found"></span>
-            <span>Target Found</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot dot-deleted"></span>
-            <span>Target Deleted</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot dot-null"></span>
-            <span>NULL / Circular Loop</span>
-          </div>
-        </div>
-      </section>
+            <div class="op-form-field">
+              <label class="form-label" for="input-delete-val">Value to Delete</label>
+              <input type="number" id="input-delete-val" class="input-field" placeholder="e.g. 10" />
+            </div>
 
-      <!-- Operations Dashboard -->
-      <section class="operations-card">
-        <!-- Operations Tab Bar -->
-        <div class="tab-bar" role="tablist">
-          <button class="tab-btn active" data-tab="tabInit" role="tab" aria-selected="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            <span>Initialize</span>
-          </button>
-          <button class="tab-btn" data-tab="tabInsert" role="tab" aria-selected="false">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            <span>Insert</span>
-          </button>
-          <button class="tab-btn" data-tab="tabDelete" role="tab" aria-selected="false">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-            <span>Delete</span>
-          </button>
-          <button class="tab-btn" data-tab="tabUpdate" role="tab" aria-selected="false">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            <span>Update</span>
-          </button>
-          <button class="tab-btn" data-tab="tabQuery" role="tab" aria-selected="false">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span>Query &amp; Traverse</span>
-          </button>
-          <button class="tab-btn" data-tab="tabManipulate" role="tab" aria-selected="false">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            <span>Manipulate</span>
-          </button>
-        </div>
+            <button type="button" class="btn btn-danger btn-lg" id="btn-do-delete">
+              ➖ Delete
+            </button>
+          </div>
 
-        <!-- Tab Contents -->
-        <div class="tab-panels">
+          <!-- 3. TRAVERSAL VIEW -->
+          <div class="op-view" id="view-traverse" role="tabpanel">
+            <div class="op-view-title-group">
+              <span class="op-view-badge">Operation #3</span>
+              <h2 class="op-view-heading">Traverse Linked List</h2>
+            </div>
+            <p class="op-view-info">Visits each node from HEAD to the terminal NULL pointer, sequentially highlighting the active pointer.</p>
 
-          <!-- 1. Initialize Tab -->
-          <div id="tabInit" class="tab-panel active" role="tabpanel">
-            <div class="panel-row">
-              <label for="initInput" class="input-label">Enter comma-separated integers to construct list:</label>
-              <div class="input-group">
-                <input type="text" id="initInput" class="form-input" placeholder="e.g. 10, 20, 30, 40, 50" value="10, 20, 30, 40">
-                <button id="btnInitList" class="btn btn-primary">
-                  <span>Initialize in C</span>
+            <button type="button" class="btn btn-violet btn-lg" id="btn-do-traverse">
+              ➔ Start Traversal
+            </button>
+          </div>
+
+          <!-- 4. SEARCHING VIEW -->
+          <div class="op-view" id="view-search" role="tabpanel">
+            <div class="op-view-title-group">
+              <span class="op-view-badge">Operation #4</span>
+              <h2 class="op-view-heading">Search for Value</h2>
+            </div>
+            <p class="op-view-info">Searches the list linearly. If found, highlights the matching node and reports its index and position.</p>
+
+            <div class="op-form-field">
+              <label class="form-label" for="input-search-val">Target Value</label>
+              <input type="number" id="input-search-val" class="input-field" placeholder="e.g. 20" />
+            </div>
+
+            <button type="button" class="btn btn-primary btn-lg" id="btn-do-search">
+              🔍 Search
+            </button>
+
+            <div class="search-output-pill hidden" id="search-output-pill"></div>
+          </div>
+
+          <!-- 5. UPDATING VIEW -->
+          <div class="op-view" id="view-update" role="tabpanel">
+            <div class="op-view-title-group">
+              <span class="op-view-badge">Operation #5</span>
+              <h2 class="op-view-heading">Update Element Value</h2>
+            </div>
+            <p class="op-view-info">Finds the first node matching the existing value and replaces it with the new value.</p>
+
+            <div class="op-form-field">
+              <label class="form-label" for="input-update-old">Existing Value (Old)</label>
+              <input type="number" id="input-update-old" class="input-field" placeholder="e.g. 20" />
+            </div>
+
+            <div class="op-form-field">
+              <label class="form-label" for="input-update-new">Replacement Value (New)</label>
+              <input type="number" id="input-update-new" class="input-field" placeholder="e.g. 25" />
+            </div>
+
+            <button type="button" class="btn btn-primary btn-lg" id="btn-do-update">
+              ✏️ Update
+            </button>
+          </div>
+
+          <!-- 6. DISPLAY LIST VIEW -->
+          <div class="op-view" id="view-display" role="tabpanel">
+            <div class="op-view-title-group">
+              <span class="op-view-badge">Operation #6</span>
+              <h2 class="op-view-heading">Display Formatted List</h2>
+            </div>
+            <p class="op-view-info">Outputs the complete pointer structure in order from HEAD to NULL.</p>
+
+            <div class="formatted-chain-card" id="formatted-chain-card">
+              <span class="chain-prefix">HEAD</span> -> <span class="chain-empty">NULL</span>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-lg" id="btn-do-display">
+              📋 Display List
+            </button>
+          </div>
+
+          <!-- 7. CLEAR LIST VIEW -->
+          <div class="op-view" id="view-clear" role="tabpanel">
+            <div class="op-view-title-group">
+              <span class="op-view-badge">Operation #7</span>
+              <h2 class="op-view-heading">Clear Entire List</h2>
+            </div>
+            <p class="op-view-info">Deallocates all node structures from simulated heap memory and resets the list.</p>
+
+            <div class="clear-confirm-card" id="clear-confirm-card">
+              <div class="confirm-message">
+                ⚠️ <strong>Confirmation Required:</strong><br />Are you sure you want to delete all nodes from the linked list?
+              </div>
+              <div class="confirm-btn-row">
+                <button type="button" class="btn btn-danger" id="btn-confirm-clear" style="flex: 1;">
+                  Yes, Clear List
+                </button>
+                <button type="button" class="btn" id="btn-cancel-clear" style="flex: 1;">
+                  Cancel
                 </button>
               </div>
             </div>
-            <div class="presets-row">
-              <span class="preset-label">Quick Presets:</span>
-              <button class="btn btn-chip" data-preset="10, 20, 30, 40">Default (4 nodes)</button>
-              <button class="btn btn-chip" data-preset="5, 15, 25, 35, 45, 55">Medium (6 nodes)</button>
-              <button class="btn btn-chip" data-preset="-12, -4, 0, 8, 16">Signed Integers</button>
-              <button class="btn btn-chip" data-preset="7, 14, 7, 21, 7">Duplicates</button>
-              <button class="btn btn-chip" data-preset="100">Single Node</button>
-              <button class="btn btn-chip chip-danger" data-preset="">Empty List</button>
-            </div>
+
+            <button type="button" class="btn btn-danger btn-lg" id="btn-show-clear-prompt">
+              🗑️ Clear List
+            </button>
           </div>
 
-          <!-- 2. Insert Tab -->
-          <div id="tabInsert" class="tab-panel" role="tabpanel">
-            <div class="operations-grid">
-              <!-- Insert Beginning -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Insert at Beginning</h4>
-                  <span class="badge badge-complexity">O(1) / O(n)</span>
-                </div>
-                <p class="op-desc">Allocates new node, sets its pointers, updates HEAD.</p>
-                <div class="op-inputs">
-                  <input type="number" id="insertBegVal" class="form-input form-input-sm" placeholder="Value (e.g. 5)" value="5">
-                  <button id="btnInsertBeg" class="btn btn-primary btn-sm">Insert Beginning</button>
-                </div>
-              </div>
+        </div>
 
-              <!-- Insert End -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Insert at End</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Traverses to last node and links new node to its next.</p>
-                <div class="op-inputs">
-                  <input type="number" id="insertEndVal" class="form-input form-input-sm" placeholder="Value (e.g. 50)" value="50">
-                  <button id="btnInsertEnd" class="btn btn-primary btn-sm">Insert End</button>
-                </div>
-              </div>
+        <!-- Operation Feedback / Result Alert Box -->
+        <div class="feedback-banner" id="feedback-banner">
+          <span class="feedback-indicator-dot" id="feedback-dot"></span>
+          <span class="feedback-msg" id="feedback-msg">Ready. Enter a value and click Insert to begin.</span>
+        </div>
 
-              <!-- Insert at Position -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Insert at Position</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">1-based position. Position 1 inserts at front.</p>
-                <div class="op-inputs-dual">
-                  <input type="number" id="insertPosVal" class="form-input form-input-sm" placeholder="Value" value="25">
-                  <input type="number" id="insertPosIdx" class="form-input form-input-sm" placeholder="Pos (1-based)" value="2" min="1">
-                  <button id="btnInsertPos" class="btn btn-primary btn-sm">Insert at Pos</button>
-                </div>
-              </div>
-
-              <!-- Insert After Value -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Insert After Value</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Finds first node matching target and inserts immediately after.</p>
-                <div class="op-inputs-dual">
-                  <input type="number" id="insertAfterTarget" class="form-input form-input-sm" placeholder="Target Value" value="20">
-                  <input type="number" id="insertAfterVal" class="form-input form-input-sm" placeholder="New Value" value="22">
-                  <button id="btnInsertAfter" class="btn btn-primary btn-sm">Insert After</button>
-                </div>
-              </div>
+        <!-- Live Heap Memory Manager Telemetry -->
+        <div class="control-section memory-section">
+          <div class="section-label">Heap Memory Manager</div>
+          <div class="memory-stats-grid">
+            <div class="stat-box">
+              <span class="stat-label">Allocations</span>
+              <span class="stat-number" id="stat-allocs">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Deallocations</span>
+              <span class="stat-number" id="stat-frees">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Active Nodes</span>
+              <span class="stat-number" id="stat-active">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">Heap Bytes</span>
+              <span class="stat-number" id="stat-bytes">0 B</span>
             </div>
           </div>
-
-          <!-- 3. Delete Tab -->
-          <div id="tabDelete" class="tab-panel" role="tabpanel">
-            <div class="operations-grid">
-              <!-- Delete Beginning -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Delete Beginning</h4>
-                  <span class="badge badge-complexity">O(1) / O(n)</span>
-                </div>
-                <p class="op-desc">Advances HEAD and frees old front node memory.</p>
-                <div class="op-inputs">
-                  <button id="btnDeleteBeg" class="btn btn-danger btn-sm btn-block">Delete Beginning</button>
-                </div>
-              </div>
-
-              <!-- Delete End -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Delete End</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Traverses to second-to-last node, frees tail, updates link.</p>
-                <div class="op-inputs">
-                  <button id="btnDeleteEnd" class="btn btn-danger btn-sm btn-block">Delete End</button>
-                </div>
-              </div>
-
-              <!-- Delete at Position -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Delete at Position</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">1-based position. Removes node at specified index.</p>
-                <div class="op-inputs">
-                  <input type="number" id="deletePosIdx" class="form-input form-input-sm" placeholder="Position (1-based)" value="2" min="1">
-                  <button id="btnDeletePos" class="btn btn-danger btn-sm">Delete at Pos</button>
-                </div>
-              </div>
-
-              <!-- Delete by Value -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Delete by Value</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Finds first occurrence of value and unlinks and frees it.</p>
-                <div class="op-inputs">
-                  <input type="number" id="deleteValTarget" class="form-input form-input-sm" placeholder="Value to delete" value="30">
-                  <button id="btnDeleteVal" class="btn btn-danger btn-sm">Delete Value</button>
-                </div>
-              </div>
-            </div>
+          <div class="leak-status-row">
+            <span class="leak-badge zero-leaks" id="stat-leak">Zero Leaks (0 active)</span>
           </div>
-
-          <!-- 4. Update Tab -->
-          <div id="tabUpdate" class="tab-panel" role="tabpanel">
-            <div class="operations-grid">
-              <!-- Update at Position -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Update Node at Position</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Replaces data payload of node at 1-based index without reallocating.</p>
-                <div class="op-inputs-dual">
-                  <input type="number" id="updatePosIdx" class="form-input form-input-sm" placeholder="Pos (1-based)" value="2" min="1">
-                  <input type="number" id="updatePosVal" class="form-input form-input-sm" placeholder="New Value" value="99">
-                  <button id="btnUpdatePos" class="btn btn-accent btn-sm">Update at Pos</button>
-                </div>
-              </div>
-
-              <!-- Update by Value -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Update Node by Value</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Finds first node matching old value and updates its integer payload.</p>
-                <div class="op-inputs-dual">
-                  <input type="number" id="updateOldVal" class="form-input form-input-sm" placeholder="Old Value" value="20">
-                  <input type="number" id="updateNewVal" class="form-input form-input-sm" placeholder="New Value" value="88">
-                  <button id="btnUpdateVal" class="btn btn-accent btn-sm">Update Value</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. Query & Traverse Tab -->
-          <div id="tabQuery" class="tab-panel" role="tabpanel">
-            <div class="operations-grid">
-              <!-- Search Value -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Search Value</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Traverses node by node until match is found or end reached.</p>
-                <div class="op-inputs">
-                  <input type="number" id="searchTargetVal" class="form-input form-input-sm" placeholder="Search target" value="30">
-                  <button id="btnSearch" class="btn btn-accent btn-sm">Search</button>
-                </div>
-              </div>
-
-              <!-- Traverse List -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Traverse List</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Sequentially inspects and highlights every node in order.</p>
-                <div class="op-inputs">
-                  <button id="btnTraverse" class="btn btn-accent btn-sm btn-block">Start Traversal</button>
-                </div>
-              </div>
-
-              <!-- Peek First & Last -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Inspect Ends (First &amp; Last)</h4>
-                  <span class="badge badge-complexity">O(1) / O(n)</span>
-                </div>
-                <p class="op-desc">Inspects the value and address of HEAD and TAIL without modifying.</p>
-                <div class="op-inputs-dual">
-                  <button id="btnPeekFirst" class="btn btn-secondary btn-sm">Get First (HEAD)</button>
-                  <button id="btnPeekLast" class="btn btn-secondary btn-sm">Get Last (TAIL)</button>
-                </div>
-              </div>
-
-              <!-- Count Nodes -->
-              <div class="op-box">
-                <div class="op-box-header">
-                  <h4>Count Nodes</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Executes C function <code>get_node_count()</code> to count elements.</p>
-                <div class="op-inputs">
-                  <button id="btnCountNodes" class="btn btn-secondary btn-sm btn-block">Query Count from C</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 6. Manipulate Tab -->
-          <div id="tabManipulate" class="tab-panel" role="tabpanel">
-            <div class="operations-grid">
-              <!-- Reverse List -->
-              <div class="op-box highlight-box">
-                <div class="op-box-header">
-                  <h4>Reverse List (In-Place)</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Reverses pointer directions iteratively with zero additional memory allocation.</p>
-                <div class="op-inputs">
-                  <button id="btnReverse" class="btn btn-primary btn-sm btn-block">Reverse List in C</button>
-                </div>
-              </div>
-
-              <!-- Clear / Reset List -->
-              <div class="op-box danger-box">
-                <div class="op-box-header">
-                  <h4>Clear &amp; Reset List</h4>
-                  <span class="badge badge-complexity">O(n)</span>
-                </div>
-                <p class="op-desc">Calls <code>free()</code> on every node in sequence to prevent memory leaks and sets <code>head = NULL</code>.</p>
-                <div class="op-inputs">
-                  <button id="btnClear" class="btn btn-danger btn-sm btn-block">Clear All Nodes (free memory)</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
       </section>
 
-
-
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="app-footer">
-      <div class="footer-content">
-        <p>
-          <strong>Linked List Interactive Visualizer</strong> &bull; Singly, Doubly &amp; Circular Linked Lists in C + WebAssembly
-        </p>
-        <p class="footer-meta">
-          Core Engine: Native C (<code>linked_list.c</code>) compiled to WebAssembly via Emscripten &bull;
-          Zero duplicated JavaScript state &bull; Pure authoritative C heap
-        </p>
-      </div>
-    </footer>
-
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
-
-    <!-- Help Modal Dialog -->
-    <div id="helpModal" class="modal-backdrop" hidden>
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>Linked List &amp; Visualizer Guide</h3>
-          <button id="btnCloseHelp" class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <h4>Linked List Types Covered</h4>
-          <ul>
-            <li><strong>Singly Linked List:</strong> Each node has a <code>data</code> field and a single <code>next</code> pointer pointing forward. The last node points to <code>NULL</code>.</li>
-            <li><strong>Doubly Linked List:</strong> Each node has <code>prev</code> and <code>next</code> pointers allowing forward and backward traversal. <code>head->prev</code> is <code>NULL</code> and tail's <code>next</code> is <code>NULL</code>.</li>
-            <li><strong>Circular Linked List:</strong> The last node links back to the <code>HEAD</code> node instead of <code>NULL</code>, forming a continuous cycle.</li>
-          </ul>
-
-          <h4>How This Visualizer Works</h4>
-          <p>
-            Unlike typical JavaScript-only animations, <strong>every operation here is executed in compiled C</strong> via WebAssembly!
+      <!-- Center Interactive Visualization Stage -->
+      <section class="center-stage" aria-label="Visual List Workspace">
+        <!-- Step Explanation Banner -->
+        <div class="step-info-card" id="step-info-banner">
+          <div class="step-card-header">
+            <div class="step-title-group">
+              <span class="step-badge" id="step-badge">Step #1</span>
+              <h2 class="step-title" id="step-title">Linked List Ready</h2>
+            </div>
+            <div class="step-meta-badges">
+              <span class="meta-pill complexity-pill" id="complexity-badge">O(1)</span>
+              <span class="meta-pill action-pill" id="action-badge">READY</span>
+            </div>
+          </div>
+          <p class="step-desc" id="step-description">
+            Initialized empty singly linked list in C runtime memory.
           </p>
-          <ul>
-            <li>When you click <strong>Insert</strong>, C calls <code>malloc(sizeof(struct Node))</code> on its WebAssembly heap.</li>
-            <li>When you click <strong>Delete</strong>, C invokes <code>free(node)</code> to prevent memory leaks.</li>
-            <li>When you click <strong>Update</strong>, C traverses directly to the target node and updates its integer payload.</li>
-            <li>When you switch list types, C dynamically adjusts pointer links across nodes in memory.</li>
-            <li>The visualizer retrieves the list directly from C memory (<code>get_serialized_list()</code>) displaying the actual memory pointers (e.g. <code>0x00812018</code>).</li>
-          </ul>
-
-          <h4>Time &amp; Space Complexities</h4>
-          <div class="table-container">
-            <table class="history-table">
-              <thead>
-                <tr>
-                  <th>Operation</th>
-                  <th>Singly Linked List</th>
-                  <th>Doubly Linked List</th>
-                  <th>Circular Linked List</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Insert Beginning</td><td><code>O(1)</code></td><td><code>O(1)</code></td><td><code>O(n)</code> (or O(1) with tail)</td></tr>
-                <tr><td>Insert End</td><td><code>O(n)</code></td><td><code>O(n)</code> (or O(1) with tail)</td><td><code>O(n)</code></td></tr>
-                <tr><td>Insert at Position</td><td><code>O(n)</code></td><td><code>O(n)</code></td><td><code>O(n)</code></td></tr>
-                <tr><td>Delete Beginning</td><td><code>O(1)</code></td><td><code>O(1)</code></td><td><code>O(n)</code></td></tr>
-                <tr><td>Delete End</td><td><code>O(n)</code></td><td><code>O(1)</code> with tail</td><td><code>O(n)</code></td></tr>
-                <tr><td>Delete by Value</td><td><code>O(n)</code></td><td><code>O(n)</code></td><td><code>O(n)</code></td></tr>
-                <tr><td>Update Node</td><td><code>O(n)</code></td><td><code>O(n)</code></td><td><code>O(n)</code></td></tr>
-                <tr><td>Search Value</td><td><code>O(n)</code></td><td><code>O(n)</code></td><td><code>O(n)</code></td></tr>
-                <tr><td>Reverse List</td><td><code>O(n)</code></td><td><code>O(n)</code></td><td><code>O(n)</code></td></tr>
-              </tbody>
-            </table>
+          <div class="step-pointers-bar">
+            <span>Active Pointers:</span>
+            <span class="pointers-code" id="active-pointers">head=NULL</span>
+            <span class="active-type-pill" id="active-type-name">Singly Linked List</span>
           </div>
         </div>
-        <div class="modal-footer">
-          <button id="btnCloseHelpBtn" class="btn btn-primary">Got it, let's learn!</button>
-        </div>
-      </div>
-    </div>
 
+        <!-- The Visual Stage Canvas: Connected boxes with arrows -->
+        <div class="stage-canvas-panel" id="stage-panel">
+          <svg class="svg-canvas-overlay" id="arrows-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="list-container" id="list-container">
+            <!-- Node cards, HEAD indicator, and NULL terminal injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Playback Control Deck -->
+        <div class="playback-deck" aria-label="Playback Controller">
+          <div class="scrubber-row">
+            <span class="step-counter-text" id="step-counter">Step 0 / 0</span>
+            <input type="range" class="step-slider" id="step-slider" min="0" max="0" value="0" aria-label="Step scrubber timeline" />
+          </div>
+
+          <div class="deck-buttons-row">
+            <div class="transport-btns">
+              <button type="button" class="btn" id="btn-prev" title="Step Backward">⏮ Prev</button>
+              <button type="button" class="btn btn-primary" id="btn-play" title="Play / Pause Animation">▶ Play</button>
+              <button type="button" class="btn" id="btn-next" title="Step Forward">Next ⏭</button>
+            </div>
+
+            <div class="speed-control-group">
+              <span>Speed:</span>
+              <input type="range" class="speed-slider" id="speed-slider" min="0.5" max="5" step="0.5" value="2" aria-label="Playback speed" />
+              <span class="speed-val-badge" id="speed-label">2x</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <!-- Load WebAssembly Module Glue -->
-  <script src="wasm/linked_list.js"></script>
-  <!-- Load Main Application Logic -->
-  <script src="app.js"></script>
+  <!-- Emscripten WASM Module Script -->
+  <script src="/wasm/linked_list.js"></script>
+  <!-- Frontend Application Script -->
+  <script type="module" src="/src/app.js"></script>
 </body>
 </html>
