@@ -7,14 +7,11 @@ An interactive, menu-driven **Singly Linked List Visualizer** built for college 
 ## ⚡ Features
 
 - **Individual Input System:** Add elements one at a time using the "Enter Value" input field. Immediate visualization update on each insertion without requiring batch input.
-- **7-Item Operation Menu:** Organized, single-operation interface displaying only the controls needed for the active task:
+- **4 Core Operations Menu:** Clean, focused operation interface displaying only the controls needed for the active task:
   1. **Insertion:** 1-based indexing, supporting beginning (new `HEAD`), end, and interior positions.
   2. **Deletion:** Deletes first matching node by value with safety guards for empty lists.
   3. **Traversal:** Sequentially visits and highlights every node from `HEAD` to `NULL`.
   4. **Searching:** Linear search with zero-based index and 1-based position output.
-  5. **Updating:** Finds the first matching node and updates its value in real time.
-  6. **Display List:** Formatted pointer chain display: `HEAD -> [10] -> [20] -> [30] -> NULL`.
-  7. **Clear List:** Memory deallocation with a confirmation modal before freeing nodes.
 - **Native C Implementation:** Core linked list logic, pointer manipulation, and memory management implemented in pure C (`c_src/singly_linked_list.c`).
 - **WebAssembly Engine:** C source compiled via Emscripten to WebAssembly (`wasm/linked_list.wasm`) for high-performance in-browser execution.
 - **Simulated Heap Telemetry:** Live tracking of dynamic allocations (`malloc`), deallocations (`free`), active heap nodes, and memory leak detection.

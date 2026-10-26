@@ -69,20 +69,7 @@ class LinkedListApp {
     this.btnDoSearch = document.getElementById('btn-do-search');
     this.searchOutputPill = document.getElementById('search-output-pill');
 
-    // 5. Updating Elements
-    this.updateOldInput = document.getElementById('input-update-old');
-    this.updateNewInput = document.getElementById('input-update-new');
-    this.btnDoUpdate = document.getElementById('btn-do-update');
 
-    // 6. Display List Elements
-    this.formattedChainCard = document.getElementById('formatted-chain-card');
-    this.btnDoDisplay = document.getElementById('btn-do-display');
-
-    // 7. Clear List Elements
-    this.clearConfirmCard = document.getElementById('clear-confirm-card');
-    this.btnShowClearPrompt = document.getElementById('btn-show-clear-prompt');
-    this.btnConfirmClear = document.getElementById('btn-confirm-clear');
-    this.btnCancelClear = document.getElementById('btn-cancel-clear');
 
     // Heap Memory Telemetry
     this.statAllocs = document.getElementById('stat-allocs');
@@ -104,7 +91,6 @@ class LinkedListApp {
       this.renderer.render(null);
 
       this.updatePositionHelper();
-      this.updateDisplayCard();
       this.setFeedback('Ready. Select an operation from the menu above to begin.', 'info');
 
       // Hide loading overlay
@@ -160,19 +146,7 @@ class LinkedListApp {
     }
   }
 
-  updateDisplayCard() {
-    if (!this.formattedChainCard) return;
-    const size = wasmBridge.getSize();
-    const nodes = this.renderer.cachedNodes || [];
 
-    if (size === 0 || nodes.length === 0) {
-      this.formattedChainCard.innerHTML = `<span class="chain-prefix">HEAD</span> -> <span class="chain-empty">NULL</span> <em style="color: var(--text-faint); margin-left: 10px;">(List is empty)</em>`;
-      return;
-    }
-
-    const chainParts = nodes.map(n => `[${n.val}]`).join(' -> ');
-    this.formattedChainCard.innerHTML = `<span class="chain-prefix">HEAD</span> -> ${chainParts} -> <span class="chain-null">NULL</span>`;
-  }
 
   switchOperation(opKey) {
     this.currentOp = opKey;
@@ -189,24 +163,10 @@ class LinkedListApp {
       view.classList.toggle('active', view.id === `view-${opKey}`);
     });
 
-    // Reset clear confirmation card if switching away
-    if (this.clearConfirmCard) {
-      this.clearConfirmCard.classList.remove('visible');
-    }
-    if (this.btnShowClearPrompt) {
-      this.btnShowClearPrompt.style.display = 'block';
-    }
-
-    // Refresh display card if switching to display
-    if (opKey === 'display') {
-      this.updateDisplayCard();
-    }
-
     // Auto-focus the primary input in the newly active view
     if (opKey === 'insert' && this.insertValInput) this.insertValInput.focus();
     if (opKey === 'delete' && this.deleteValInput) this.deleteValInput.focus();
     if (opKey === 'search' && this.searchValInput) this.searchValInput.focus();
-    if (opKey === 'update' && this.updateOldInput) this.updateOldInput.focus();
   }
 
   bindEvents() {
@@ -246,7 +206,6 @@ class LinkedListApp {
         this.insertValInput.focus();
       }
       this.updatePositionHelper();
-      this.updateDisplayCard();
     };
 
     this.btnDoInsert?.addEventListener('click', handleInsert);
@@ -284,7 +243,6 @@ class LinkedListApp {
       }
 
       this.updatePositionHelper();
-      this.updateDisplayCard();
     };
 
     this.btnDoDelete?.addEventListener('click', handleDelete);
@@ -348,89 +306,7 @@ class LinkedListApp {
       if (e.key === 'Enter') handleSearch();
     });
 
-    // 5. UPDATING EXECUTION
-    const handleUpdate = () => {
-      const size = wasmBridge.getSize();
-      if (size === 0) {
-        this.setFeedback('Cannot update: List is currently empty.', 'error');
-        return;
-      }
 
-      const oldVal = parseInt(this.updateOldInput?.value, 10);
-      const newVal = parseInt(this.updateNewInput?.value, 10);
-
-      if (isNaN(oldVal)) {
-        this.setFeedback('Please enter a valid existing old value.', 'error');
-        return this.shakeInput(this.updateOldInput);
-      }
-      if (isNaN(newVal)) {
-        this.setFeedback('Please enter a valid replacement new value.', 'error');
-        return this.shakeInput(this.updateNewInput);
-      }
-
-      const res = wasmBridge.updateValue(oldVal, newVal);
-      this.handleOperationResult(`Update Value (${oldVal} ➔ ${newVal})`, res);
-
-      if (res.success) {
-        this.setFeedback(`✅ Updated first matching node: ${oldVal} is now ${newVal}.`, 'success');
-        if (this.updateOldInput) this.updateOldInput.value = '';
-        if (this.updateNewInput) this.updateNewInput.value = '';
-        this.updateDisplayCard();
-      } else {
-        this.setFeedback(`❌ Original value ${oldVal} was not found in the list.`, 'error');
-      }
-    };
-
-    this.btnDoUpdate?.addEventListener('click', handleUpdate);
-    this.updateOldInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') this.updateNewInput?.focus();
-    });
-    this.updateNewInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleUpdate();
-    });
-
-    // 6. DISPLAY LIST EXECUTION
-    this.btnDoDisplay?.addEventListener('click', () => {
-      this.updateDisplayCard();
-      const size = wasmBridge.getSize();
-      if (size > 0) {
-        const res = wasmBridge.traverse();
-        this.handleOperationResult('Displaying Current Linked List', res);
-        this.setFeedback(`📋 Displayed current list structure (${size} elements).`, 'success');
-      } else {
-        this.renderer.render(null);
-        this.setFeedback('📋 Current list is empty: HEAD -> NULL.', 'info');
-      }
-    });
-
-    // 7. CLEAR LIST EXECUTION
-    this.btnShowClearPrompt?.addEventListener('click', () => {
-      const size = wasmBridge.getSize();
-      if (size === 0) {
-        this.setFeedback('List is already empty. Nothing to clear.', 'info');
-        return;
-      }
-      if (this.clearConfirmCard) this.clearConfirmCard.classList.add('visible');
-      if (this.btnShowClearPrompt) this.btnShowClearPrompt.style.display = 'none';
-    });
-
-    this.btnCancelClear?.addEventListener('click', () => {
-      if (this.clearConfirmCard) this.clearConfirmCard.classList.remove('visible');
-      if (this.btnShowClearPrompt) this.btnShowClearPrompt.style.display = 'block';
-      this.setFeedback('Clear list cancelled.', 'info');
-    });
-
-    this.btnConfirmClear?.addEventListener('click', () => {
-      const res = wasmBridge.clearList();
-      this.handleOperationResult('Clear All Nodes', res);
-
-      if (this.clearConfirmCard) this.clearConfirmCard.classList.remove('visible');
-      if (this.btnShowClearPrompt) this.btnShowClearPrompt.style.display = 'block';
-
-      this.updatePositionHelper();
-      this.updateDisplayCard();
-      this.setFeedback('🗑️ List cleared. All nodes have been deallocated from heap memory.', 'success');
-    });
 
     // Playback Controls
     this.playBtn?.addEventListener('click', () => this.togglePlay());

@@ -40,7 +40,7 @@
       <section class="glass-panel left-controls-panel" aria-label="Operations and Controls">
         <div class="panel-title">Operations Menu</div>
 
-        <!-- 7-Item Organized Operation Menu -->
+        <!-- Organized Operation Menu -->
         <nav class="op-menu-list" role="tablist" aria-label="Linked List Operations">
           <button type="button" class="op-menu-btn active" data-op="insert" role="tab" aria-selected="true" id="tab-op-insert">
             <span class="op-menu-num">1</span>
@@ -57,18 +57,6 @@
           <button type="button" class="op-menu-btn" data-op="search" role="tab" aria-selected="false" id="tab-op-search">
             <span class="op-menu-num">4</span>
             <span class="op-menu-name">Searching</span>
-          </button>
-          <button type="button" class="op-menu-btn" data-op="update" role="tab" aria-selected="false" id="tab-op-update">
-            <span class="op-menu-num">5</span>
-            <span class="op-menu-name">Updating</span>
-          </button>
-          <button type="button" class="op-menu-btn" data-op="display" role="tab" aria-selected="false" id="tab-op-display">
-            <span class="op-menu-num">6</span>
-            <span class="op-menu-name">Display List</span>
-          </button>
-          <button type="button" class="op-menu-btn" data-op="clear" role="tab" aria-selected="false" id="tab-op-clear">
-            <span class="op-menu-num">7</span>
-            <span class="op-menu-name">Clear List</span>
           </button>
         </nav>
 
@@ -150,73 +138,6 @@
             </button>
 
             <div class="search-output-pill hidden" id="search-output-pill"></div>
-          </div>
-
-          <!-- 5. UPDATING VIEW -->
-          <div class="op-view" id="view-update" role="tabpanel">
-            <div class="op-view-title-group">
-              <span class="op-view-badge">Operation #5</span>
-              <h2 class="op-view-heading">Update Element Value</h2>
-            </div>
-            <p class="op-view-info">Finds the first node matching the existing value and replaces it with the new value.</p>
-
-            <div class="op-form-field">
-              <label class="form-label" for="input-update-old">Existing Value (Old)</label>
-              <input type="number" id="input-update-old" class="input-field" placeholder="e.g. 20" />
-            </div>
-
-            <div class="op-form-field">
-              <label class="form-label" for="input-update-new">Replacement Value (New)</label>
-              <input type="number" id="input-update-new" class="input-field" placeholder="e.g. 25" />
-            </div>
-
-            <button type="button" class="btn btn-primary btn-lg" id="btn-do-update">
-              ✏️ Update
-            </button>
-          </div>
-
-          <!-- 6. DISPLAY LIST VIEW -->
-          <div class="op-view" id="view-display" role="tabpanel">
-            <div class="op-view-title-group">
-              <span class="op-view-badge">Operation #6</span>
-              <h2 class="op-view-heading">Display Formatted List</h2>
-            </div>
-            <p class="op-view-info">Outputs the complete pointer structure in order from HEAD to NULL.</p>
-
-            <div class="formatted-chain-card" id="formatted-chain-card">
-              <span class="chain-prefix">HEAD</span> -> <span class="chain-empty">NULL</span>
-            </div>
-
-            <button type="button" class="btn btn-primary btn-lg" id="btn-do-display">
-              📋 Display List
-            </button>
-          </div>
-
-          <!-- 7. CLEAR LIST VIEW -->
-          <div class="op-view" id="view-clear" role="tabpanel">
-            <div class="op-view-title-group">
-              <span class="op-view-badge">Operation #7</span>
-              <h2 class="op-view-heading">Clear Entire List</h2>
-            </div>
-            <p class="op-view-info">Deallocates all node structures from simulated heap memory and resets the list.</p>
-
-            <div class="clear-confirm-card" id="clear-confirm-card">
-              <div class="confirm-message">
-                ⚠️ <strong>Confirmation Required:</strong><br />Are you sure you want to delete all nodes from the linked list?
-              </div>
-              <div class="confirm-btn-row">
-                <button type="button" class="btn btn-danger" id="btn-confirm-clear" style="flex: 1;">
-                  Yes, Clear List
-                </button>
-                <button type="button" class="btn" id="btn-cancel-clear" style="flex: 1;">
-                  Cancel
-                </button>
-              </div>
-            </div>
-
-            <button type="button" class="btn btn-danger btn-lg" id="btn-show-clear-prompt">
-              🗑️ Clear List
-            </button>
           </div>
 
         </div>
