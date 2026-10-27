@@ -69,24 +69,82 @@
               <span class="op-view-badge">Operation #1</span>
               <h2 class="op-view-heading">Insert Element</h2>
             </div>
-            <p class="op-view-info">Enter one integer at a time and specify its position in the list.</p>
+            <p class="op-view-info">Select an insertion operation to add a node to the singly linked list:</p>
 
-            <div class="op-form-field">
-              <label class="form-label" for="input-insert-val">Enter Value</label>
-              <input type="number" id="input-insert-val" class="input-field" placeholder="e.g. 10" autofocus />
+            <!-- 3 Clearly Labeled Insertion Options -->
+            <div class="insert-mode-pills" role="tablist" aria-label="Insertion Operations">
+              <button type="button" class="insert-mode-btn active" data-mode="beginning" id="tab-mode-beginning" role="tab" aria-selected="true">
+                Insert at Beginning
+              </button>
+              <button type="button" class="insert-mode-btn" data-mode="middle" id="tab-mode-middle" role="tab" aria-selected="false">
+                Insert in Middle
+              </button>
+              <button type="button" class="insert-mode-btn" data-mode="end" id="tab-mode-end" role="tab" aria-selected="false">
+                Insert at End
+              </button>
             </div>
 
-            <div class="op-form-field">
-              <label class="form-label" for="input-insert-pos">Insertion Position (1-Based)</label>
-              <input type="number" id="input-insert-pos" class="input-field" placeholder="1" min="1" value="1" />
-              <div class="position-convention-box" id="insert-pos-convention">
-                📌 <strong>Position Convention:</strong> 1-based indexing. Position 1 inserts at beginning. Position <span id="pos-max-indicator">1</span> inserts at end.
+            <!-- Option A: Insert at Beginning -->
+            <div class="insert-subview active" id="subview-beginning" role="tabpanel">
+              <div class="subview-header">
+                <span class="subview-tag">Beginning (Head)</span>
+                <span class="complexity-badge-sm">Time: O(1)</span>
               </div>
+              <p class="subview-desc">Creates a new node at the front of the list and updates the HEAD pointer.</p>
+
+              <div class="op-form-field">
+                <label class="form-label" for="input-insert-head-val">Enter Value</label>
+                <input type="number" id="input-insert-head-val" class="input-field" placeholder="e.g. 5" autofocus />
+              </div>
+
+              <button type="button" class="btn btn-emerald btn-lg" id="btn-insert-head">
+                ➕ Insert at Beginning
+              </button>
             </div>
 
-            <button type="button" class="btn btn-emerald btn-lg" id="btn-do-insert">
-              ➕ Insert
-            </button>
+            <!-- Option B: Insert in Middle -->
+            <div class="insert-subview" id="subview-middle" role="tabpanel">
+              <div class="subview-header">
+                <span class="subview-tag">Middle (Interior)</span>
+                <span class="complexity-badge-sm">Time: O(n)</span>
+              </div>
+              <p class="subview-desc">Traverses from HEAD to the specified index and splices the new node between nodes.</p>
+
+              <div class="op-form-field">
+                <label class="form-label" for="input-insert-mid-val">Enter Value</label>
+                <input type="number" id="input-insert-mid-val" class="input-field" placeholder="e.g. 25" />
+              </div>
+
+              <div class="op-form-field">
+                <label class="form-label" for="input-insert-mid-pos">Insertion Position (0-Based Index)</label>
+                <input type="number" id="input-insert-mid-pos" class="input-field" placeholder="0" min="0" value="0" />
+                <div class="position-convention-box" id="insert-pos-convention">
+                  📌 <strong>0-Based Indexing:</strong> Position 0 is Head. Valid index range: 0 to <span id="pos-max-indicator">0</span>.
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-emerald btn-lg" id="btn-insert-mid">
+                ➕ Insert in Middle
+              </button>
+            </div>
+
+            <!-- Option C: Insert at End -->
+            <div class="insert-subview" id="subview-end" role="tabpanel">
+              <div class="subview-header">
+                <span class="subview-tag">End (Tail)</span>
+                <span class="complexity-badge-sm">Time: O(n)</span>
+              </div>
+              <p class="subview-desc">Traverses the list to find the last node and connects it to the new node.</p>
+
+              <div class="op-form-field">
+                <label class="form-label" for="input-insert-tail-val">Enter Value</label>
+                <input type="number" id="input-insert-tail-val" class="input-field" placeholder="e.g. 40" />
+              </div>
+
+              <button type="button" class="btn btn-emerald btn-lg" id="btn-insert-tail">
+                ➕ Insert at End
+              </button>
+            </div>
           </div>
 
           <!-- 2. DELETION VIEW -->

@@ -166,27 +166,33 @@ bool sll_insert_tail(int val) {
 bool sll_insert_at_position(int val, int pos) {
     step_recorder_reset();
     int size = sll_size();
-    if (pos < 1 || pos > size + 1) {
+    if (pos < 0 || pos > size) {
         char err[128];
-        snprintf(err, sizeof(err), "Invalid position %d. Valid range is 1 to %d.", pos, size + 1);
+        if (size == 0) {
+            snprintf(err, sizeof(err), "Invalid position %d. List is empty; only position 0 (HEAD) is valid.", pos);
+        } else {
+            snprintf(err, sizeof(err), "Invalid position %d. Valid index range is 0 to %d (0-based indexing).", pos, size);
+        }
         step_record("Validation Error", err, 1, "O(1)", "ERROR", "", -1, "", -1, 0);
         return false;
     }
 
-    if (pos == 1) {
+    if (pos == 0) {
         return sll_insert_head(val);
     }
-    if (pos == size + 1) {
+    if (pos == size) {
         return sll_insert_tail(val);
     }
 
     step_record(
-        "Start Insert at Position",
-        "Target position is in the interior of the list. We must traverse to position - 1.",
+        "Start Insert in Middle",
+        "Target position is in the interior of the list. Traversing from HEAD to find node at index pos - 1.",
         1, "O(n)", "INIT", "", -1, "", -1, 0
     );
 
     SNode *newNode = create_snode(val);
+    if (!newNode) return false;
+
     step_record(
         "Allocate Node Memory",
         "malloc(sizeof(SNode)) allocated on heap for insertion.",
@@ -194,43 +200,43 @@ bool sll_insert_at_position(int val, int pos) {
     );
 
     SNode *temp = g_sll_head;
-    for (int i = 1; i < pos - 1 && temp != NULL; i++) {
+    for (int i = 0; i < pos - 1 && temp != NULL; i++) {
         char ptr_buf[128];
-        snprintf(ptr_buf, sizeof(ptr_buf), "temp=0x%X (pos %d)", temp->address, i);
+        snprintf(ptr_buf, sizeof(ptr_buf), "temp=0x%X (index %d)", temp->address, i);
         step_record(
-            "Traversing to Preceding Node",
-            "temp = temp->next; Moving closer to index (pos - 1).",
-            7, "O(n)", "TRAVERSE", ptr_buf, i - 1, "CURR", val, newNode->address
+            "Traversing Towards Position",
+            "temp = temp->next; Moving closer to insertion index.",
+            7, "O(n)", "TRAVERSE", ptr_buf, i, "CURR", val, newNode->address
         );
         temp = temp->next;
     }
 
     char ptr_buf[128];
-    snprintf(ptr_buf, sizeof(ptr_buf), "temp=0x%X, temp->next=0x%X", temp->address, temp->next ? temp->next->address : 0);
+    snprintf(ptr_buf, sizeof(ptr_buf), "temp=0x%X (index %d), temp->next=0x%X", temp->address, pos - 1, temp->next ? temp->next->address : 0);
     step_record(
-        "Preceding Node Reached",
-        "Found node at pos - 1. We will insert the new node right after this node.",
-        9, "O(1)", "HIGHLIGHT", ptr_buf, pos - 2, "CURR", val, newNode->address
+        "Preceding Node Located",
+        "Found node at index pos - 1. Splicing new node right after this node.",
+        9, "O(1)", "HIGHLIGHT", ptr_buf, pos - 1, "CURR", val, newNode->address
     );
 
     newNode->next = temp->next;
     step_record(
         "Attach newNode->next",
-        "newNode->next = temp->next; Preserving the link to the remainder of the list.",
-        10, "O(1)", "POINTER", "newNode->next = temp->next", pos - 2, "CURR", val, newNode->address
+        "newNode->next = temp->next; Linking new node to subsequent node in list.",
+        10, "O(1)", "POINTER", "newNode->next = temp->next", pos - 1, "CURR", val, newNode->address
     );
 
     temp->next = newNode;
     step_record(
         "Attach temp->next to newNode",
         "temp->next = newNode; Splicing the new node into the list chain.",
-        11, "O(1)", "POINTER", "temp->next = newNode", pos - 1, "NEW", -1, 0
+        11, "O(1)", "POINTER", "temp->next = newNode", pos, "NEW", -1, 0
     );
 
     step_record(
-        "Position Insertion Completed",
-        "Successfully inserted new node at the requested position.",
-        12, "O(n)", "COMPLETE", "", pos - 1, "NEW", -1, 0
+        "Middle Insertion Completed",
+        "Successfully inserted new node in middle of list. Total time complexity: O(n).",
+        12, "O(n)", "COMPLETE", "", pos, "NEW", -1, 0
     );
 
     return true;

@@ -113,7 +113,7 @@ export class LinkedListRenderer {
 
           <div class="node-card ${highlightClass}">
             <div class="node-header">
-              <span class="node-index">Pos #${idx + 1}</span>
+              <span class="node-index">Index [${idx}]</span>
               <span class="addr-value" title="Simulated Heap Memory Address">${addrHex}</span>
             </div>
 
@@ -130,7 +130,7 @@ export class LinkedListRenderer {
             </div>
 
             <div class="node-footer">
-              <span class="role-desc">${isHighlighted && highlight_role ? highlight_role : `Index [${idx}]`}</span>
+              <span class="role-desc">${isHighlighted && highlight_role ? highlight_role : `Pos #${idx + 1}`}</span>
             </div>
           </div>
         </div>

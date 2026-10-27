@@ -50,12 +50,25 @@ class LinkedListApp {
     this.menuBtns = document.querySelectorAll('.op-menu-btn');
     this.opViews = document.querySelectorAll('.op-view');
 
-    // 1. Insertion Elements
-    this.insertValInput = document.getElementById('input-insert-val');
-    this.insertPosInput = document.getElementById('input-insert-pos');
+    // 1. Insertion Elements (Modes: Beginning, Middle, End)
+    this.insertModeBtns = document.querySelectorAll('.insert-mode-btn');
+    this.insertSubviews = document.querySelectorAll('.insert-subview');
+    this.currentInsertMode = 'beginning';
+
+    // A. Beginning
+    this.insertHeadValInput = document.getElementById('input-insert-head-val');
+    this.btnInsertHead = document.getElementById('btn-insert-head');
+
+    // B. Middle
+    this.insertMidValInput = document.getElementById('input-insert-mid-val');
+    this.insertMidPosInput = document.getElementById('input-insert-mid-pos');
+    this.btnInsertMid = document.getElementById('btn-insert-mid');
     this.posMaxIndicator = document.getElementById('pos-max-indicator');
     this.insertPosConvention = document.getElementById('insert-pos-convention');
-    this.btnDoInsert = document.getElementById('btn-do-insert');
+
+    // C. End
+    this.insertTailValInput = document.getElementById('input-insert-tail-val');
+    this.btnInsertTail = document.getElementById('btn-insert-tail');
 
     // 2. Deletion Elements
     this.deleteValInput = document.getElementById('input-delete-val');
@@ -126,22 +139,47 @@ class LinkedListApp {
     inputEl.focus();
   }
 
+  switchInsertMode(modeKey) {
+    this.currentInsertMode = modeKey;
+
+    this.insertModeBtns.forEach(btn => {
+      const match = (btn.getAttribute('data-mode') === modeKey);
+      btn.classList.toggle('active', match);
+      btn.setAttribute('aria-selected', match ? 'true' : 'false');
+    });
+
+    this.insertSubviews.forEach(view => {
+      view.classList.toggle('active', view.id === `subview-${modeKey}`);
+    });
+
+    // Auto-focus input for active mode
+    if (modeKey === 'beginning' && this.insertHeadValInput) this.insertHeadValInput.focus();
+    if (modeKey === 'middle' && this.insertMidValInput) this.insertMidValInput.focus();
+    if (modeKey === 'end' && this.insertTailValInput) this.insertTailValInput.focus();
+  }
+
   updatePositionHelper() {
     const size = wasmBridge.getSize();
-    const maxPos = size + 1;
     if (this.posMaxIndicator) {
-      this.posMaxIndicator.textContent = String(maxPos);
+      this.posMaxIndicator.textContent = String(size);
     }
-    if (this.insertPosInput) {
-      this.insertPosInput.min = '1';
-      this.insertPosInput.max = String(maxPos);
-      this.insertPosInput.value = String(maxPos);
+    if (this.insertMidPosInput) {
+      this.insertMidPosInput.min = '0';
+      this.insertMidPosInput.max = String(size);
+      if (size === 0) {
+        this.insertMidPosInput.value = '0';
+      } else {
+        const cur = parseInt(this.insertMidPosInput.value, 10);
+        if (isNaN(cur) || cur > size) {
+          this.insertMidPosInput.value = String(size);
+        }
+      }
     }
     if (this.insertPosConvention) {
       if (size === 0) {
-        this.insertPosConvention.innerHTML = `📌 <strong>List is Empty:</strong> Enter Position 1 to insert the first element (HEAD).`;
+        this.insertPosConvention.innerHTML = `📌 <strong>List is Empty:</strong> Only Position 0 (HEAD) is valid.`;
       } else {
-        this.insertPosConvention.innerHTML = `📌 <strong>Position Convention (1-Based):</strong> Valid range: <strong>1 to ${maxPos}</strong>. Position 1 inserts at beginning (new HEAD), Position ${maxPos} appends at end.`;
+        this.insertPosConvention.innerHTML = `📌 <strong>0-Based Indexing:</strong> Position 0 is Head. Valid index range: <strong>0 to ${size}</strong> (index ${size} appends at End).`;
       }
     }
   }
@@ -164,7 +202,11 @@ class LinkedListApp {
     });
 
     // Auto-focus the primary input in the newly active view
-    if (opKey === 'insert' && this.insertValInput) this.insertValInput.focus();
+    if (opKey === 'insert') {
+      if (this.currentInsertMode === 'beginning' && this.insertHeadValInput) this.insertHeadValInput.focus();
+      else if (this.currentInsertMode === 'middle' && this.insertMidValInput) this.insertMidValInput.focus();
+      else if (this.currentInsertMode === 'end' && this.insertTailValInput) this.insertTailValInput.focus();
+    }
     if (opKey === 'delete' && this.deleteValInput) this.deleteValInput.focus();
     if (opKey === 'search' && this.searchValInput) this.searchValInput.focus();
   }
@@ -178,42 +220,109 @@ class LinkedListApp {
       });
     });
 
-    // 1. INSERTION EXECUTION
-    const handleInsert = () => {
-      const valStr = this.insertValInput?.value.trim();
+    // Insertion Sub-Mode Switching (Beginning, Middle, End)
+    this.insertModeBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const mode = e.currentTarget.getAttribute('data-mode');
+        this.switchInsertMode(mode);
+      });
+    });
+
+    // 1.A INSERTION AT THE BEGINNING
+    const handleInsertHead = () => {
+      const valStr = this.insertHeadValInput?.value.trim();
       const val = parseInt(valStr, 10);
       if (valStr === '' || isNaN(val)) {
-        this.setFeedback('Please enter a valid integer in "Enter Value".', 'error');
-        return this.shakeInput(this.insertValInput);
+        this.setFeedback('Please enter a valid integer for Insertion at Beginning.', 'error');
+        return this.shakeInput(this.insertHeadValInput);
+      }
+
+      const res = wasmBridge.insertHead(val);
+      this.handleOperationResult(`Insert ${val} at Beginning (Head)`, res);
+
+      const newSize = wasmBridge.getSize();
+      this.setFeedback(`✅ Successfully inserted ${val} at the beginning (HEAD). List size: ${newSize}. Time Complexity: O(1).`, 'success');
+
+      if (this.insertHeadValInput) {
+        this.insertHeadValInput.value = '';
+        this.insertHeadValInput.focus();
+      }
+      this.updatePositionHelper();
+    };
+
+    this.btnInsertHead?.addEventListener('click', handleInsertHead);
+    this.insertHeadValInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleInsertHead();
+    });
+
+    // 1.B INSERTION IN THE MIDDLE
+    const handleInsertMiddle = () => {
+      const valStr = this.insertMidValInput?.value.trim();
+      const val = parseInt(valStr, 10);
+      if (valStr === '' || isNaN(val)) {
+        this.setFeedback('Please enter a valid integer for Insertion in Middle.', 'error');
+        return this.shakeInput(this.insertMidValInput);
       }
 
       const size = wasmBridge.getSize();
-      const pos = parseInt(this.insertPosInput?.value, 10);
-      if (isNaN(pos) || pos < 1 || pos > size + 1) {
-        this.setFeedback(`Invalid position ${pos}. Valid position range is 1 to ${size + 1}.`, 'error');
-        return this.shakeInput(this.insertPosInput);
+      const posStr = this.insertMidPosInput?.value.trim();
+      const pos = parseInt(posStr, 10);
+
+      if (posStr === '' || isNaN(pos) || pos < 0 || pos > size) {
+        if (size === 0) {
+          this.setFeedback('List is empty. Only position 0 (HEAD) is valid.', 'error');
+        } else {
+          this.setFeedback(`Invalid position ${pos}. Valid zero-based range is 0 to ${size}.`, 'error');
+        }
+        return this.shakeInput(this.insertMidPosInput);
       }
 
       const res = wasmBridge.insertAtPosition(val, pos);
       this.handleOperationResult(`Insert ${val} at Position ${pos}`, res);
 
       const newSize = wasmBridge.getSize();
-      this.setFeedback(`✅ Successfully inserted ${val} at Position ${pos}. List size: ${newSize}.`, 'success');
+      this.setFeedback(`✅ Successfully inserted ${val} at position ${pos} (0-based). List size: ${newSize}. Time Complexity: O(n).`, 'success');
 
-      // Clear value input and set focus for next element
-      if (this.insertValInput) {
-        this.insertValInput.value = '';
-        this.insertValInput.focus();
+      if (this.insertMidValInput) {
+        this.insertMidValInput.value = '';
+        this.insertMidValInput.focus();
       }
       this.updatePositionHelper();
     };
 
-    this.btnDoInsert?.addEventListener('click', handleInsert);
-    this.insertValInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleInsert();
+    this.btnInsertMid?.addEventListener('click', handleInsertMiddle);
+    this.insertMidValInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this.insertMidPosInput?.focus();
     });
-    this.insertPosInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleInsert();
+    this.insertMidPosInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleInsertMiddle();
+    });
+
+    // 1.C INSERTION AT THE END
+    const handleInsertTail = () => {
+      const valStr = this.insertTailValInput?.value.trim();
+      const val = parseInt(valStr, 10);
+      if (valStr === '' || isNaN(val)) {
+        this.setFeedback('Please enter a valid integer for Insertion at End.', 'error');
+        return this.shakeInput(this.insertTailValInput);
+      }
+
+      const res = wasmBridge.insertTail(val);
+      this.handleOperationResult(`Insert ${val} at End (Tail)`, res);
+
+      const newSize = wasmBridge.getSize();
+      this.setFeedback(`✅ Successfully inserted ${val} at the end (Tail). List size: ${newSize}. Time Complexity: O(n).`, 'success');
+
+      if (this.insertTailValInput) {
+        this.insertTailValInput.value = '';
+        this.insertTailValInput.focus();
+      }
+      this.updatePositionHelper();
+    };
+
+    this.btnInsertTail?.addEventListener('click', handleInsertTail);
+    this.insertTailValInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleInsertTail();
     });
 
     // 2. DELETION EXECUTION
